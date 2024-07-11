@@ -1,0 +1,192 @@
+Security;
+==========
+
+Download the script
+#chmod 777 script.sh
+#sh script.sh
+
+NOTE: please check our connection name and change in the script.
+
+
+=====
+Two types of roles:-
+1) Role
+2) ClusterRole
+
+To create Role:-
+#kubectl create role <rolename> --verb=get,list --resource=pods --namespace=<namespacename>
+
+To Create Role Binding:-
+#kubectl create rolebinding <rolebindingname> --role=<rolename> --user=<username> --namespace=<namespacename>
+
+To list role and rolebinding:-
+#kubectl get role
+#kubectl get rolebinding
+
+
+To create ClusterRole:-
+#kubectl create clusterrole <rolename> --verb=get,list --resource=pods,nodes --namespace=<namespacename>
+
+To Create Cluster Role Binding:-
+#kubectl create clusterrolebinding <rolebindingname> --clusterrole=<rolename> --user=<username> --namespace=<namespacename>
+
+To list Clusterrole and clusterrolebinding:-
+#kubectl get clusterrole
+#kubectl get clusterrolebinding
+
+==============
+Security Context
+==========
+#vim context.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: my-pod
+spec:
+ containers:
+ - name: my-pod
+   image: gcr.io/google-samples/node-hello:1.0
+   securityContext:
+     runAsUser: 1000
+
+#kubectl logs pod/<podname>
+#ps -aux 
+#ps -lax | grep <userid> -> to check container virtual user processes(run on host machine)
+
+Define Capabilities
+========================
+#vim context.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: my-pod
+spec:
+ containers:
+ - name: my-pod
+   image: gcr.io/google-samples/node-hello:1.0
+   securityContext:
+     capabilities:
+	   add: ["SYS_TIME"]
+	   
+if we want to test then we can use time management commands in our containers.
+
+===============================================================================================================
+									Environment Variable
+								============================
+Three types of ways to define env variable:
+1) Plain key
+2) ConfigMap
+3) Secrets
+
+Plain Key:
+#vim pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: plain-var-pod
+spec: 
+ containers:
+ - name: plain-container
+   image: nginx
+   env:
+    - name: <keyname>
+	  value: <value>
+
+To verify:
+#kubectl exec -it <podname> -- bash
+	> #env -> to check environment variable
+	
+===================
+Demo of ConfigMap
+=================
+
+#vim configmap.yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+ name: db-configmap
+data:
+ MYSQL_USER: nehal
+ MYSQL_PASSWORD: redhat
+ MYSQL_HOSTNAME: example.com
+ MYSQL_ROOT_PASSWORD: myredhat
+ 
+#kubectl get configmap
+#kubectl describe configmap <configmapname>
+
+#vim configmap-pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: sql-pod
+spec:
+ containers:
+ - name: sql-pod
+   image: nginx
+   envFrom:
+    - configMapRef:
+	    name: db-configmap
+		
+To verify:
+#kubectl exec -it <podname> -- bash
+	> #env -> to check environment variable   
+	
+========
+Secrets
+========
+To create a variabe in encrypt format and share with the pod
+
+
+#echo -n "values" | base64
+copy and paste according to your values
+
+
+#vim secrets.yml
+apiVersion: v1
+kind: Secret
+metadata:
+ name: db-secret
+data:
+ MYSQL_USER: nehal
+ MYSQL_PASSWORD: redhat
+ MYSQL_HOSTNAME: example.com
+ MYSQL_ROOT_PASSWORD: myredhat 
+								
+#kubectl get secrets
+#kubectl describe secret <secretname>						
+								
+#vim secret-pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: sql-pod
+spec:
+ containers:
+ - name: sql-pod
+   image: nginx
+   envFrom:
+    - secretRef:
+	    name: db-secret
+		
+To verify:
+#kubectl exec -it <podname> -- bash
+	> #env -> to check environment variable  								
+					
+								
+								
+								
+								
+								
+								
+								
+								
+
+
+	   
+
+
+	 
+	 
+
+
+

@@ -1,0 +1,398 @@
+Replication Controller
+==============================
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+ name: rc-web
+spec:
+ replicas: 5
+ template:
+  metadata:
+   name: rc-nginx
+   labels:
+    app: nginx
+  spec:
+   containers:
+   - name: rc-nginx
+     image: nginx
+
+#kubectl get replicationcontroller -> to get rc
+
+(
+NOTE: ONLY FOR PRACTICE:
+	disable: #kubectl drain <nodename> --force --ignore-daemonsets
+	enable: #kubectl uncordon <nodename>
+	)
+	
+Replica Set
+================
+#vim rs.yml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+ name: rs-web
+spec:
+ selector:
+  matchLabels:
+   app: nginx
+ replicas: 5
+ template:
+  metadata:
+   name: rs-nginx
+   labels:
+    app: nginx
+  spec:
+   containers:
+   - name: rs-nginx
+     image: nginx
+	 
+Two types of selectors:-
+1) equality based (we can only define one condition at time app=nginx)
+2) set based (we can define multiple condition at one time app = nginx or database)
+
+Difference between replicationcontroller and replicaset:-
+replication controller:-
+	1) selector is optional
+	2) only equality based is supported
+replica set:-	
+	1) selector is mandatory
+	2) equality and set based both selector supported
+
+Set Based Example:-
+#vim rs.yml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+ name: rs-web
+spec:
+ selector:
+  matchExpressions:
+  - key: group
+    operator: In
+	values:
+	 - hr
+	 - sales
+ replicas: 5
+ template:
+  metadata:
+   name: rs-nginx
+   labels:
+    app: nginx
+  spec:
+   containers:
+   - name: rs-nginx
+     image: nginx
+
+ 
+Commands:-
+#kubectl scale --replicas=6 -f <filename>
+#kubectl scale --replicas=6 replicaset <rsname>
+#kubectl get rs
+#kubectl get rc
+#kubectl delete -f <filename>
+#kubectl delete rs <rsname>
+#kubectl delete rc <rcname>
+
+Service
+==============
+
+Cluster IP
+==================
+
+#vim myapp.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: myapp
+ labels:
+  app: myweb
+spec:
+ containers:
+ - name: myweb
+   image: nginxdemos/hello:plain-text
+
+#vim service.yml
+apiVersion: v1
+kind: Service
+metadata:
+ name: web-service
+spec:
+ type: ClusterIP
+ ports:
+  - targetPort: 80					(#host port)
+    port: 80						(#container port)
+ selector:
+  app: myweb
+
+#kubectl apply -f <filename>
+#kubectl get service
+
+
+NodePort
+==============
+
+Service
+==============
+
+Cluster IP
+==================
+
+#vim myapp.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: myapp
+ labels:
+  app: myweb
+spec:
+ containers:
+ - name: myweb
+   image: nginxdemos/hello:plain-text
+
+#vim service.yml
+apiVersion: v1
+kind: Service
+metadata:
+ name: web-service
+spec:
+ type: NodePort
+ ports:
+  - targetPort: 80					(#host port)
+    port: 80						(#container port)
+	nodePort: 30001					(range between 30000-32767)
+ selector:
+  app: myweb
+
+#kubectl apply -f <filename>
+#kubectl get service
+
+===========
+Manaual Scheduling
+==================
+
+Ways to schedule pod:
+1) directly define in pod definition
+2) node selector
+3) node affinity
+4) taint and tolerations
+
+#vim manual.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: abcd
+spec:
+ containers:
+ - name: abcd
+   image: nginx
+ nodeName: worker1
+ 
+Example2: Node Selector
+=======================
+
+To Label Node:
+#kubectl label node <nodename> <key>=<value>
+example:
+	#kubectl label node worker1 size=large -> to give label
+	#kubectl label node worker1 size- -> to remove label
+
+#vim node-selector.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: abcd
+spec:
+ containers:
+ - name: abcd
+   image: nginx
+ nodeSelector:
+   size: large
+     
+
+#kubectl get pods -o wide
+#kubectl get nodes --show-labels
+
+--------------
+Daemon Set
+================
+#vim ds.yml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+ name: monitoring-ds
+spec:
+ selector:
+  matchLabels:
+   app: monitoring
+ template:
+  metadata:
+   name: monitoring-pod
+   labels:
+    app: monitoring
+  spec:
+   containers:
+   - name: monitoring-pod
+     image: nginx
+
+#kubectl apply -f ds.yml
+#kubectl get daemonsets
+#kubectl get pods -o wide -> so we will see every node have one copy of pod
+
+============================
+Managing Deployments
+===============================
+
+#vim deployment.yml
+apiVersion: apps/v1
+kind: Deployments
+metadata:
+ name: webserver
+spec:
+ replicas: 5
+ selector:
+  matchLabels:
+   app: webserver
+ template:
+  metadata:
+   name: webserver-pod
+   labels:
+    app:webserver
+  spec:
+   containers:
+   - name: web
+     image: nginx:1.14.2
+
+#kubectl apply -f deployment.yml
+To list deployments:-
+#kubectl get deployments
+
+To describe deployment:-s
+#kubectl describe deployments <deploymentname>
+
+To set image :-
+#kubectl set image deployment/<deploymentname> <containername>=<updatedimage>
+	example:
+		#kubectl set image deployment/webserver web=nginx:1.17.1
+		
+To rollback our image to previous version:-
+#kubectl rollout undo deployment/<deploymentname>
+
+To check history of our upgrades:-
+#kubectl rollout history deployments/<deploymentname>
+
+To rollback using revision:
+#kubectl rollout undo deployment/<deploymentname> --to-revision=<revisionnumber>
+
+
+=====================================================================================================================
+												Storage
+											================
+											
+Ephermal Storage(data will be save on the node)
+===================
+
+#vim ephermal.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: cache-pod
+spec:
+ containers:
+ - name: cache-pod
+   image: nginx
+   volumeMounts:
+   - mountPath: /<containerpath>
+     name: myvolume
+ volumes:
+  - name: myvolume
+    emptyDir: {}
+	
+NOTE:- suppose cache-pod is created on worker1 so that means the data will be save in worker1.
+
+
+Persistent Volume
+====================
+
+#vim pv.yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+ name: mydata-web
+spec:
+ accessModes:
+  - ReadWriteMany
+ capacity:
+  storage: 1Gi
+ hostPath:
+  path: "/webdata"
+
+
+Permission:- 
+	1) ReadWriteMany :- full access (accessible by all the pods)
+	2) ReadOnlyMany:-  write by one pod others pod can read 
+	3) ReadWriteOnce:- write and read only by single pod 
+	
+To list PV:-
+#kubectl get pv
+
+PersistentVolumeClaim
+======================
+#vim pvc.yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: webclaim
+spec:
+ accessModes: 
+ - ReadWriteMany
+ resources:
+  requests:
+   storage: 500Mi
+
+Use PVC in POD
+==================
+#vim pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: web-pod
+spec:
+ containers:
+ - name: web-pod
+   image: nginx
+   volumeMounts:
+   - mountPath: /<containerpath>  		
+     name: myvolume
+ volumes:
+  - name: myvolume
+    persistentVolumeClaim:
+	  claimName: webclaim					(webclaim is pvc name )
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+

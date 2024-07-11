@@ -1,0 +1,174 @@
+gauravkumar9130@gmail.com
++91-8505875512
+
+1) Create a group named devops and in group add three users x,y and z.
+
+2) Create a file under / with the named test and write about linux and save the file.
+
+3) Create a folder under / with the named data and give full permission to this folder. Login with x user and create a file under /data with your name.
+
+4) Restart the sshd service.
+
+5) Generate the ssh key based authentication with another centos machine.
+
+6) Print the date command and put the output in /data/datefile.txt using root user.
+
+7) Install the package httpd
+
+https://linuxlab.koenig-solutions.com
+
+UserName							Password
+koenigsolutions\oct05n5-centos76	Pa$$w0rdX6			Abhishek
+koenigsolutions\oct050x-centos76	Pa$$w0rd1D			Aditya
+koenigsolutions\oct05sk-centos76	Pa$$w0rd$T			Akshar
+koenigsolutions\oct05nc-centos76	Pa$$w0rdXK			Apoorva
+koenigsolutions\oct05xj-centos76	Pa$$w0rdER			Raju
+koenigsolutions\oct05er-centos76	Pa$$w0rdh@			Kalyani
+koenigsolutions\oct055o-centos76	Pa$$w0rd6X			Mohamed
+koenigsolutions\oct051o-centos76	Pa$$w0rd1s			Namita
+koenigsolutions\oct054c-centos76	Pa$$w0rd5K			Namrata
+koenigsolutions\oct05v1-centos76	Pa$$w0rd*1			Nehal
+koenigsolutions\oct059z-centos76	Pa$$w0rdaG			Nikhail
+koenigsolutions\oct05ey-centos76	Pa$$w0rdM[			Tanaya
+
+lab setup
+computer name: 203.115.110.106:9095
+username: <yourname>
+password: <yourpassword>
+browser ip: 172.25.100.101
+
+
+
+#mkdir <foldername> -> to create a folder
+#touch <filename> -> to create a file
+
+#cd <path> -> ( to change directory)
+
+FSH->
+/ -> main directory
+/boot -> booting files
+/bin -> normal user commands
+/sbin -> root user's commands
+/etc -> configuration files
+/root -> root user's home directory
+/home -> normal user's home directory
+/var -> logs and messages
+
+
+#pwd -> to show present working directory
+
+Editor
+============
+Three editors ->
+1) vi
+2) vim
+3) gedit
+
+#vim <name>
+
+there are three types of mode->
+1) command mode (esc)
+2) insert mode (i,a, INSERT key)
+3) replace mode (R)
+
+To save the file:
+1) esc
+2) shift+:
+3)
+w -> write
+q -> quit
+! -> forcefully
+
+
+Managing Users and Groups
+==============================
+
+To add a user:-
+#useradd <username>
+
+To delete a user:
+#userdel <username>
+
+To create a group:
+#groupadd <groupname>
+
+To add a user in group:
+if user is not created:-
+#useradd -G <groupname> <username>
+
+if user is already created:
+#usermod -G <groupname> <username>
+
+to give admin access to the normal user:-
+#useradd -G wheel <username>
+#passwd <username> -> to give password
+
+#su <username>
+#sudo <root command>
+
+#cat /var/log/secure
+
+#cat /etc/passwd -> to show user information
+#cat /etc/group -> to show group information
+
+Managing Permission
+==========================
+
+Three types of permission:
+1) read -> 4
+2) write -> 2
+3) execute -> 1
+
+0 -> no permission
+1 -> execute
+2 -> write
+3 -> write and execute
+4 -> read
+5 -> read and execute
+6 -> read write
+7 -> full permission
+
+#chmod 777 <file/dir>
+user -> read and write
+group -> read only
+others -> no permission
+
+#chmod 640 <file/dir>
+
+===============================
+Managing services
+==========================
+#systemctl start <servicename>
+#systemctl stop <servicename>
+#systemctl enable <servicename> -> to start at boot time
+#systemctl disable <servicename> -> to stop at boot time
+#systemctl status <servicename>
+
+========================
+Managing SSH
+======================
+#ssh <username>@<ipaddress>
+
+Two types of authentication in ssh:
+1) password based
+2) key based
+
+To configure key based authentication:
+#ssh-keygen -> to generate public and private key
+#ssh-copy-id <username>@<ipaddress>
+
+Managing Packages
+=======================
+
+#yum install <pkg>
+	example: #yum install httpd -y
+#yum remove <pkg>
+#yum reinstall <pkg>
+#yum update <pkg>
+
+Managing Network
+=====================
+#nmcli connection show -> to show connections
+#nmcli connection modify "con name" connection.autoconnect yes -> to active connection
+#nmcli connection reload
+#nmcli connection up "con name"

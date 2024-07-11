@@ -1,0 +1,195 @@
+Kubernetes Installation
+===========================
+
+
+Lab Environment:
+1) 3 Centos Machines
+2) Static IP:
+	master: 172.25.230.245
+	worker1: 172.25.230.159
+	worker2: 172.25.230.184
+3) Hardware Requirement:
+	Min Cpu: 2
+	Min RAM: 8 GB
+	
+	
+Pre(ON EVERY MACHINE)
+1) Set the hostname:-
+		1st machine:- #hostnamectl set-hostname master
+		2nd machine:- #hostnamectl set-hostname worker1
+		3rd machine:- #hostnamectl set-hostname worker2
+2) Stop the firewalld:-
+	#systemctl stop firewalld
+	#systemctl disable firewalld
+
+3) SELINUX:-
+#vim /etc/sysconfig/selinux
+	SELINUX=permissive
+#setenforce 0
+
+4) Disable SWAP:
+#vim /etc/fstab
+go to swap line and add # symbol before the line
+#swapoff -a
+
+5) Installation of Docker:-
+	#wget -O /etc/yum.repos.d/docker.repo https://download.docker.com/linux/centos/docker-ce.repo
+	#yum install docker -y
+	#systemctl start docker
+	#systemctl enable docker
+
+6) Configure DNS: (do task on only master machine)
+#vim /etc/hosts
+172.25.230.245 master
+172.25.230.159 worker1
+172.25.230.184 worker2
+
+#scp /etc/hosts worker1:/etc/hosts
+#scp /etc/hosts worker2:/etc/hosts
+
+7) Install kubectl,kubelet and kubeadm
+
+#vim /etc/yum.repos.d/kube.repo 
+[kubernetes]
+name=kubernetes.repo
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+repo_gpgcheck=1
+
+#scp /etc/yum.repos.d/kube.repo worker1:/etc/yum.repos.d/
+#scp /etc/yum.repos.d/kube.repo worker2:/etc/yum.repos.d/
+
+#yum install kubectl kubelet kubeadm -y (in all machines)
+#systemctl start kubelet (in all machines)
+#systemctl enable kubelet (in all machines)
+
+8) Intialize Kubernetes Cluster and Joining Nodes
+
+#kubeadm init --pod-network-cidr=10.244.0.0/16 (Only on Master)
+
+kubeadm command will give you some output copy 3 lines from mkdir and paste in the master and copy join command and paste in worker1 and worker2
+
+9) Install Network Solution:
+	#kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+===========================================
+Kubectl Commands
+====================
+
+#kubectl run --image=nginx first-pod
+#kubectl get nodes -> to show nodes
+#kubectl get pods -> to show pods
+#kubectl get pods -o wide -> to show pod and where pod is created
+#kubectl describe node <nodename> -> to describe node
+#kubectl exec -it <podname> -- bash -> to go in pod
+#kubectl exec -it <podname -c <containername> -- bash -> to go in particular container in a pod
+#kubectl describe pod <podname> -> to describe pod
+#kubectl delete pod <podname> -> to delete pod
+#kubectl explain <resourcename> -> to get help
+
+Bash Completion
+======================
+#yum install bash-completion -y
+#cd ~/.kube
+#kubectl completion bash > kube.sh
+	Temporary:-
+		#source kube.sh
+	Permanently:
+		#vim /root/.bashrc
+		source /root/.kube/kube.sh
+		
+		
+--------------------------
+Create Pod with YAML
+========================
+
+#vim first-pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: mypod
+spec:
+ containers:
+ - name: mypod
+   image: nginx
+   
+#kubectl create -f <filename>
+		OR
+#kubectl apply -f <filename>
+		OR
+#kubectl delete pod <podname>
+#kubectl delete -f <filename>
+
+Multi Container
+=====================
+#vim multi.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: mypod
+spec:
+ containers:
+ - name: mypod
+   image: nginx
+ - name: second
+   image: redis
+   
+Init Containers
+====================
+#vim init.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: init
+spec:
+ containers:
+ - name: webserver
+   image: nginx
+ initContainers:
+ - name: db
+   image: redis
+   args: ["sleep","5"]
+   
+To Give Label
+================
+#vim label.yml
+apiVersion: v1
+kind: Pod
+metadata:
+ name: webpod
+ labels:
+   dep: sales
+spec:
+ containers:
+ - name: abc
+   image: nginx 
+
+#kubectl get pods --show-labels -> to show labels of every pod
+#kubectl label pod <podname> <key>=<value> -> to set label 
+	example: #kubectl label pod abc-pod env=prod
+#kubectl label --overwrite pod <podname> <key>=<value> -> to overwrite label
+#kubectl label pod <podname> env- -> to remove label (just add key- symbol)
+
+Selector:-
+#kubectl get pods -l <key>=<value> -> to filter label
+#kubectl get pods -l env!=pod -> to filter labels except env=prod
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,77 @@
+1) Create a docker container with the name web1 using image nginx.
+
+2) Create a docker container with the name web2 using image ubuntu:16.04 and create a webserver with content "Hello Docker".
+NOTE:it should be accessible on port no 8081
+
+3) Create a Dockerfile with given instructions:
+image: postgres:9.4
+environment variables:
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+4) Create a docker volume with name persistentvol.
+5) Create a docker container with the name web3 and use persistentvol volume to mount directory /var/www/html.
+6) Create two networks with name: netone and nettwo
+7) Create a container with name web4 and use netone network.
+8) Create a container with name web5 and use nettwo network.
+9) Use docker compose and create a volume and network:
+volume name: datavol
+network name: netthree
+Using the volume and network create a container with name web5.
+10) Push all the images you have created in above questions in your private registry. (Deploy Private Registry if not have)
+
+Pre(ON EVERY MACHINE)
+1) Set the hostname:-
+1st machine:- #hostnamectl set-hostname master
+2nd machine:- #hostnamectl set-hostname worker1
+3rd machine:- #hostnamectl set-hostname worker2
+2) Stop the firewalld:-
+#systemctl stop firewalld
+#systemctl disable firewalld
+
+3) SELINUX:-
+#vim /etc/sysconfig/selinux
+SELINUX=permissive
+#setenforce 0
+
+4) Disable SWAP:
+#vim /etc/fstab
+go to swap line and add # symbol before the line
+#swapoff -a
+
+5) Installation of Docker:-
+#wget -O /etc/yum.repos.d/docker.repo https://download.docker.com/linux/centos/docker-ce.repo
+#yum install docker -y
+#systemctl start docker
+#systemctl enable docker
+
+6) Configure DNS: (do task on only master machine)
+#vim /etc/hosts
+172.25.230.245 master
+172.25.230.159 worker1
+172.25.230.184 worker2
+
+#scp /etc/hosts worker1:/etc/hosts
+#scp /etc/hosts worker2:/etc/hosts
+
+7) Install kubectl,kubelet and kubeadm
+
+#vim /etc/yum.repos.d/kube.repo
+[kubernetes]
+name=kubernetes.repo
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+repo_gpgcheck=1
+
+#scp /etc/yum.repos.d/kube.repo worker1:/etc/yum.repos.d/
+#scp /etc/yum.repos.d/kube.repo worker2:/etc/yum.repos.d/
+
+#yum install kubectl kubelet kubeadm -y (in all machines)
+#systemctl start kubelet (in all machines)
+#systemctl enable kubelet (in all machines)
+
+why we are not able to create the pod on master?
+Let's suppose if master goes down then is it possible to manage pod by kubelet?
+How Kubernetes components are created in a pod? Where are the yaml files?

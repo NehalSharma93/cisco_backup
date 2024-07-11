@@ -1,0 +1,119 @@
+Docker
+==============
+
+Install Docker
+
+#wget -O /etc/yum.repos.d/docker.repo https://download.docker.com/linux/centos/docker-ce.repo
+#yum install docker -y
+#systemctl start docker
+#systemctl enable docker
+
+Docker Commands
+====================
+#docker version -> to show version
+#docker info -> cpu and memory and architecture and storage driver
+#docker search <name> -> to search image 
+#docker pull <imagename> -> to pull image 
+#docker images -> to show images
+#docker ps -> to show all the running container
+#docker ps -a -> to show all states(stopped,started,paused) containers 
+#docker run -it -d --name=<containername> <imagename> -> to create container
+#docker exec -it <containername> bash -> to go in container
+#docker inspect <container> -> to check information of container
+#docker start <container> -> to start container
+#docker stop <container> -> to stop container
+#docker rm <container> -> to delete stopped container
+#docker rm -f <container> -> to delete container forcefully
+#docker rmi <container> -> to delete image
+
+public registry:
+1)  hub.docker.com
+2) quay.io (redhat)
+3) gcr.io (google)
+4) azure 
+
+
+
+Creating a webserver with ubuntu image
+============================================================
+#docker run -it -d --name=webserver ubuntu:16.04
+#docker exec -it webserver bash
+	> #apt-get update
+	> #apt-get install apache2
+	> #echo "Hello this is Docker Container WEBSERVER" > /var/www/html/index.html
+	> #service apache2 restart
+#docker inspect webserver
+
+Creating a webserver with ubuntu image using port mapping
+============================================================
+#docker run -it -d -p 82:80--name=webserver ubuntu:16.04
+#docker exec -it webserver bash
+	> #apt-get update
+	> #apt-get install apache2
+	> #echo "Hello this is Docker Container WEBSERVER" > /var/www/html/index.html
+	> #service apache2 restart
+#docker inspect webserver
+
+
+==========================================================================================
+Creating Images
+===================================
+
+Two methods to build image:-
+1) docker commit 
+2) dockerfile (instruction for container)
+
+
+===========================================
+Create image using dockercommit
+======================================
+
+#docker run -it -d --name=web1 ubuntu:16.04
+#docker exec -it web1 bash
+	> #apt-get update
+	> #apt-get install apache2
+	> #echo "Hello this is Docker Container WEBSERVER" > /var/www/html/index.html
+	> #service apache2 restart
+
+To create image:
+#docker commit <containerid> <imagename>
+
+
+========================================
+Create image using Dockerfile
+=======================================
+
+Dockerfile instructions:
+1) FROM -> what image you want to use
+2) RUN -> run the command
+3) COPY -> copy file from only host machine to container
+4) ADD -> same as copy(copy file from remote machines)
+5) MAINTAINER -> author information
+6) ENV -> environment variables
+7) EXPOSE -> your port number for your container
+
+DEMO
+========
+#mkdir webserver
+#cd webserver
+#mkdir files
+#echo "hello data" > files/index.html
+#vim Dockerfile
+FROM ubuntu:16.04
+RUN apt-get update -y 
+RUN apt-get install apache2 -y
+COPY files/index.html /var/www/html/index.html
+EXPOSE 80
+
+#docker build . -t <imagename>
+
+
+
+	
+
+
+
+
+
+
+

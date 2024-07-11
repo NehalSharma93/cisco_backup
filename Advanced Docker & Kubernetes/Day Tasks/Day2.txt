@@ -1,0 +1,223 @@
+1) Create a docker container with the name web1 using image nginx.
+
+Ans.
+
+#docker run -it -d --name=web1 nginx
+
+2) Create a docker container with the name web2 using image ubuntu:16.04 and create a webserver with content "Hello Docker".
+NOTE:it should be accessible on port no 8081
+
+Ans.
+#docker run -it -d -p 8081:80 --name=web2 ubuntu:16.04
+#docker exec -it web2 bash
+	#apt-get update
+	#apt-get install apache2 -y
+	#echo "this is running on port 8081" > /var/www/html/index.html/index
+	#service apache2 restart
+	#exit
+now we can access our web server on port localhost:8081 or container ip
+
+3) Create a Dockerfile with given instructions:
+	image: postgres:9.4 (database)
+	environment variables:
+		POSTGRES_USER=postgres
+		POSTGRES_PASSWORD=postgres
+
+Ans.
+#mkdir abc
+#cd abc
+#vim Dockerfile
+FROM postgres:9.4
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+#docker build . -t <myimage>
+#docker images
+#docker history <imagename>
+
+========================================================================================
+										Docker Registry
+									=========================
+Two types of registries:-
+1) public
+2) private
+
+Create a account on hub.docker.com
+Create Repository
+tag your image:
+	#docker tag <imageid> <userid>/<repositoryname>
+Docker Login:
+	#docker login
+Push the image:
+	#docker push <userid>/<repositoryname>
+
+
+Create Private Registry
+==============================
+#docker run -it -d -p 5000:5000 --name=privateregistry registry
+Tag your image:
+	#docker tag <imageid> localhost:5000/gauravimage
+PUSH your image:
+	#docker push localhost:5000/gauravimage
+	
+	
+How to find my private registry image:
+#find / -name <imagename>
+
+Pull from private registry:
+#docker pull localhost:5000/<repositoryname>
+
+==========================================================================================
+									Managing Resources for Container
+								=======================================
+
+#docker stats -> to show resource consumption
+
+To restrict for 300M memory and unlimited virtual memory:-
+#docker run -it -d -m 300M --memory-swap -1 --name=<containername> <imagename>
+
+To restrict for 300M memory and 600M virtual memory:-
+#docker run -it -d -m 300M --memory-swap 600M --name=<containername> <imagename>
+
+To restrict cpu and memory:-
+#docker run -it -d -m 300m --cpuset-cpus=1 --name=<containername> <imagename>
+
+========================================================================================
+									Docker Storage
+								========================
+
+Three ways to store data:
+1) tmpfs 
+2) volumes
+3) bind mounts
+
+
+Volume Commands
+====================
+#docker volume ls -> to list volumes
+#docker volume create <volname> -> to create volume
+#docker volume inspect <volname>
+#docker volume rm <volname> -> to delete volume
+
+To create a container using volume:
+#docker run -it -d -v <volumename>:<containerpath> --name=<containername> <imagename>
+
+Bind Mounts
+================
+#docker run -it -d -v /etc/hosts:<containerpath> <imagename>
+
+
+===========================================================================================
+									Docker Networking
+								========================
+We have three types of network:
+1) bridge
+2) host (network of host machine)
+3) none (no network)
+
+docker0 -> default bridge 
+
+#docker network ls -> to list networks(docker)
+#docker network create --driver=bridge <bridgename> -> to create a bridge
+#docker network create --driver=bridge --subnet 192.168.1.0/16  <bridgename>
+
+To create a container using custom bridge:-
+#docker run -it -d --network=<bridgename> --name=<containername> <imagename>
+
+To create a container using host network:-
+#docker run -it -d --network=host --name=<containername> <imagename>
+
+To create a container using none network:-
+#docker run -it -d --network=none --name=<containername> <imagename>
+
+=========================================================================================			
+									Linux Capabilities
+								===========================
+https://man7.org/linux/man-pages/man7/capabilities.7.html
+								
+#docker run -it -d --name=<containername> --privileged <imagename>
+
+--cap-add=
+--cap-drop=
+
+#docker run -it -d --name=<containername> --cap-drop=ALL --cap-add=SYS_TIME <imagename>
+
+
+=====================================================================================
+								Deploying an Voting Application
+							=========================================
+
+#yum install -y git
+#git clone https://github.com/gauravkumar9130/example-voting-app.git
+
+Deploy databases:-
+#docker run -it -d --name=redis redis
+#docker run -it -d -e POSTGRES_USER_USER=postgres -e POSTGRES_PASSWORD=postgres --name=db postgres:9.4
+
+Deploying Voting Application:-
+#cd example-voting-app
+#cd vote
+#docker build . -t voting-app
+#docker run -it -d --name=voteapp --link redis:redis -p 5000:80 voting-app
+
+Deploy worker application:-
+#cd example-voting-app
+#cd worker
+#docker build . -t worker-app
+#docker run -it -d --link redis:redis --link db:db --name=workerapp worker-app
+
+Deploy Result Application:
+#cd example-voting-app
+#cd result
+#docker build . -t result-app
+#docker run -it -d --name=result -p 5001:80 --link db:db result-app
+
+SO NOW APPLICATION IS WORKING :)
+
+======================================================================================
+										Docker Compose 
+									==========================
+
+Installation of Docker Compose:
+https://docs.docker.com/compose/install/
+
+Manually:-
+#docker run -it -d -p 5000:80 --name=hello ubuntu:16.04
+
+DockerCompose Syntax:
+Example1:
+
+#mkdir mycompose
+#vim docker-compose.yml  			OR			$vim docker-compose.yaml
+version: '3'
+services:
+ hello:
+  image: ubuntu:16.04
+  ports:
+   - "5000:80"
+  stdin_open: true		
+  tty: true
+#docker-compose up -d -> to run docker-compose yaml file
+
+Example2:
+#vim docker-compose.yml
+version: '3'
+services:
+ hello:
+  image: ubuntu:16.04
+  ports:
+   - "5000:80"
+  stdin_open: true		
+  tty: true
+ web2:
+  image: nginx
+  ports:
+   - "5001:80"
+  stdin_open: true
+  tty: true
+  
+
+
+
+
+

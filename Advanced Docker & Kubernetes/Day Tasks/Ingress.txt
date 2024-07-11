@@ -1,0 +1,80 @@
+									INGRESS
+								================
+Deploy Ingress Controller:-
+#git clone https://github.com/nginxinc/kubernetes-ingress
+#cd kubernetes-ingress
+#git checkout v1.8.1
+#cd deployments
+#kubectl apply -f common/ns-and-sa.yaml
+#kubectl apply -f common/default-server-secret.yaml
+#kubect apply -f common/nginx-config.yaml
+#kubectl apply -f rbac/rbac.yaml
+#kubectl apply -f daemon-set/nginx-ingress.yaml
+
+To Verify
+============
+#kubectl gete pods -n nginx-ingress
+
+Create Application
+========================
+#kubectl create ns hotel
+
+#vim deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: hotel-app
+ namespace: hotel
+spec:
+ replicas: 5
+ selector:
+  matchLabels:
+   app: hotel
+ template:
+  metadata:
+   name: hotel-pod
+   labels:
+     app:hotel 
+  spec:
+   containers:
+   - name: hotel
+     image: nginx
+
+#vim cip.yml
+apiVersion: v1
+kind: Service
+metadata:
+ name: hotel-svc
+ namespace: hotel
+spec:
+ type: ClusterIP
+ ports:
+ - port: 80
+   targetPort: 80
+   protocol: TCP
+ selector:
+  app: hotel
+
+#vim ingress-rule.yml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: hotel-ingress
+ namespace: hotel
+spec:
+ rules:
+ - host: hotel.example.com
+   http:
+    paths:
+	- path: /
+	  pathType: Prefix
+	  backend:
+	   service:
+	    name: hotel-svc
+		port:
+		 number: 80
+#kubectl get ingress -n hotel
+#kubectl describe ingress <ingressname> -n hotel
+
+
+NOTE: Please add hotel.example.com in /etc/hosts file in the front of any worker node because DNS is not configured.

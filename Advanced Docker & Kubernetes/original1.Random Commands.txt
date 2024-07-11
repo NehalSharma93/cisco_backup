@@ -1,0 +1,365 @@
+#wget -O /etc/yum.repos.d/docker.repo https://download.docker.com/linux/centos/docker-ce.repo
+#yum install docker -y
+#systemctl start docker
+#systemctl enable docker
+
+Docker Commands
+====================
+#docker version -> to show version
+#docker info -> cpu and memory and architecture and storage driver
+#docker search <name> -> to search image
+#docker pull <imagename> -> to pull image
+#docker images -> to show images
+#docker ps -> to show all the running container
+#docker ps -a -> to show all states(stopped,started,paused) containers
+#docker run -it -d --name=<containername> <imagename> -> to create container
+#docker exec -it <containername> bash -> to go in container
+#docker inspect <container> -> to check information of container
+#docker start <container> -> to start container
+#docker stop <container> -> to stop container
+#docker rm <container> -> to delete stopped container
+#docker rm -f <container> -> to delete container forcefully
+#docker rmi <container> -> to delete image
+
+Network enabling Commands
+===========================
+nmcli connection modify ens160 connection.autoconnect yes
+nmcli connection reload
+nmcli connection up ens160
+
+
+Creating a webserver with ubuntu image
+============================================================
+#docker run -it -d --name=webserver ubuntu:16.04
+#docker exec -it webserver bash
+> #apt-get update
+> #apt-get install apache2
+> #echo "Hello this is Docker Container WEBSERVER" > /var/www/html/index.html
+> #service apache2 restart
+#docker inspect webserver
+
+Creating a webserver with ubuntu image using port mapping
+============================================================
+#docker run -it -d -p 82:80--name=webserver ubuntu:16.04
+#docker exec -it webserver bash
+> #apt-get update
+> #apt-get install apache2
+> #echo "Hello this is Docker Container WEBSERVER" > /var/www/html/index.html
+> #service apache2 restart
+#docker inspect webserver
+
+Two types of registries:-
+1) public
+2) private
+
+Create an account on hub.docker.com
+Create Repository
+tag your image:
+#docker tag <imageid> <userid>/<repositoryname>
+Docker Login:
+#docker login
+Push the image:
+#docker push <userid>/<repositoryname>
+
+
+Create Private Registry
+==============================
+#docker run -it -d -p 5000:80 --name=privateregistry registry
+Tag your image:
+#docker tag <imageid> localhost:5000/gauravimage
+PUSH your image:
+#docker push localhost:5000/gauravimage
+
+
+How to find my private registry image:
+#find / -name <imagename>
+
+Pull from private registry:
+#docker pull localhost:5000/<repositoryname>
+Docker Registry
+=========================
+Two types of registries:-
+1) public
+2) private
+
+Create a account on hub.docker.com
+Create Repository
+tag your image:
+#docker tag <imageid> <userid>/<repositoryname>
+Docker Login:
+#docker login
+Push the image:
+#docker push <userid>/<repositoryname>
+
+
+Create Private Registry
+==============================
+#docker run -it -d -p 5000:5000 --name=privateregistry registry
+Tag your image:
+#docker tag <imageid> localhost:5000/gauravimage
+PUSH your image:
+#docker push localhost:5000/gauravimage
+
+
+How to find my private registry image:
+#find / -name <imagename>
+
+Pull from private registry:
+#docker pull localhost:5000/<repositoryname>
+
+Docker Storage
+========================
+
+Three ways to store data:
+1) tmpfs
+2) volumes
+3) bind mounts
+
+
+Volume Commands
+====================
+#docker volume ls -> to list volumes
+#docker volume create <volname> -> to create volume
+#docker volume inspect <volname>
+#docker volume rm <volname> -> to delete volume
+
+To create a container using volume:
+#docker run -it -d -v <volumename>:<containerpath> --name=<containername> <imagename>
+
+Bind Mounts
+================
+#docker run -it -d -v /etc/hosts:<containerpath> <imagename>
+
+
+Docker Networking
+========================
+We have three types of network:
+1) bridge
+2) host (network of host machine)
+3) none (no network)
+
+docker0 -> default bridge
+
+#docker network ls -> to list networks(docker)
+#docker network create --driver=bridge <bridgename> -> to create a bridge
+#docker network create --driver=bridge --ip-range 192.168.1.0 --subnet 255.255.0.0 <bridgename>
+#docker network create --driver=bridge --subnet 192.168.1.0/16 <bridgename>
+
+To create a container using custom bridge:-
+#docker run -it -d --network=<bridgename> --name=<containername> <imagename>
+
+To create a container using host network:-
+#docker run -it -d --network=host --name=<containername> <imagename>
+
+To create a container using none network:-
+#docker run -it -d --network=none --name=<containername> <imagename>
+
+To delete all containers at once
+docker rm -f $(docker ps -a)
+
+
+Hey everyone as there is a lot to copy and thus a lot of chances for a typo, you can loginto the firefox of your centos machines and go to the following website: etherpad.opendev.org
+
+here on prompt you can enter: ADCCO
+
+you will get all the commands from today's session until now and it would be easier to copy paste
+
+Also, please do not cut paste we all will be sharing a single copy 😅
+
+#kubeadm init --pod-network-cidr=10.244.0.0/16 (Only on Master)
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+
+8) Intialize Kubernetes Cluster and Joining Nodes
+
+#kubeadm init --pod-network-cidr=10.244.0.0/16 (Only on Master)
+
+kubeadm command will give you some output copy 3 lines from mkdir and paste in the master and copy join command and paste in worker1 and worker2
+
+9) Install Network Solution:
+#kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+
+===========================================
+Kubectl Commands
+====================
+
+#kubectl run --image=nginx first-pod
+#kubectl get nodes -> to show nodes
+#kubectl get pods -> to show pods
+#kubectl get pods -o wide -> to show pod and where pod is created
+#kubectl describe node <nodename> -> to describe node
+#kubectl exec -it <podname> -- bash -> to go in pod
+#kubectl exec -it <podname -c <containername> -- bash -> to go in particular container in a pod
+#kubectl describe pod <podname> -> to describe pod
+#kubectl delete pod <podname> -> to delete pod
+#kubectl explain <resourcename> -> to get help
+
+Bash Completion
+======================
+#yum install bash-completion -y
+#cd ~/.kube
+#kubectl completion bash > kube.sh
+Temporary:-
+#source kube.sh
+Permanently:
+#vim /root/.bashrc
+source /root/.kube/kube.sh
+
+
+--------------------------
+Create Pod with YAML
+========================
+
+#vim first-pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+name: mypod
+spec:
+containers:
+- name: mypod
+image: nginx
+
+#kubectl create -f <filename>
+OR
+#kubectl apply -f <filename>
+OR
+#kubectl delete pod <podname>
+#kubectl delete -f <filename>
+
+Multi Container
+=====================
+#vim multi.yml
+apiVersion: v1
+kind: Pod
+metadata:
+name: mypod
+spec:
+containers:
+- name: mypod
+image: nginx
+- name: second
+image: redis
+
+To Give Label
+================
+#vim label.yml
+apiVersion: v1
+kind: Pod
+metadata:
+name: webpod
+labels:
+dep: sales
+spec:
+containers:
+- name: abc
+image: nginx
+
+#kubectl get pods --show-labels -> to show labels of every pod
+#kubectl label pod <podname> <key>=<value> -> to set label
+example: #kubectl label pod abc-pod env=prod
+#kubectl label --overwrite pod <podname> <key>=<value> -> to overwrite label
+#kubectl label pod <podname> env- -> to remove label (just add key- symbol)
+
+Selector:-
+#kubectl get pods -l <key>=<value> -> to filter label
+#kubectl get pods -l env!=pod -> to filter labels except env=prod
+
+NodePort
+==============
+
+Service
+==============
+
+Cluster IP
+==================
+
+#vim myapp.yml
+apiVersion: v1
+kind: Pod
+metadata:
+name: myapp
+labels:
+app: myweb
+spec:
+containers:
+- name: myweb
+image: nginxdemos/hello:plain-text
+
+#vim service.yml
+apiVersion: v1
+kind: Service
+metadata:
+name: web-service
+spec:
+type: NodePort
+ports:
+- targetPort: 80 (#host port)
+port: 80 (#container port)
+nodePort: 30001 (range between 30000-32767)
+selector:
+app: myweb
+
+#kubectl apply -f <filename>
+#kubectl get service
+
+yaml spacing issue
+#vim /root/.vimrc
+set ai
+set ts=2
+set et
+set cursorcolumn
+
+kubect exec -it <podname> -c <containername> bash
+kubectl get pv
+kubectl get pods -o wide -> to check where pod is created
+and go to the node and type #find / -name <volumename>
+
+#docker run -it -d --name=ms mcr.microsoft.com/powershell
+#docker exec -it ms pwsh
+
+Download the script
+#chmod 777 script.sh
+#sh script.sh
+
+Two types of roles:-
+1) Role
+2) ClusterRole
+
+To create Role:-
+#kubectl create role <rolename> --verb=get,list --resource=pods --namespace=<namespacename>
+
+To Create Role Binding:-
+#kubectl create rolebinding <rolebindingname> --role=<rolename> --user=<username> --namespace=<namespacename>
+
+To list role and rolebinding:-
+#kubectl get role
+#kubectl get rolebinding
+
+
+To create ClusterRole:-
+#kubectl create clusterrole <rolename> --verb=get,list --resource=pods,nodes --namespace=<namespacename>
+
+To Create Cluster Role Binding:-
+#kubectl create clusterrolebinding <rolebindingname> --clusterrole=<rolename> --user=<username> --namespace=<namespacename>
+
+To list Clusterrole and clusterrolebinding:-
+#kubectl get clusterrole
+#kubectl get clusterrolebinding
+
+#yum install git -y
+#git clone https://github.com/gauravkumar9130/kube-yaml.git
+#cd kube-yaml/monitor/prometheus
+#kubectl apply -f prometheus.yaml
+#kubectl apply -f kube-state-metrics-configs/.
+#kubectl get svc -n monitoring
+access on browser localhost:<nodeport>
+
+#git clone https://github.com/nginxinc/kubernetes-ingress.git
+#cd kubernetes-ingress
+#cd deployments
+#kubectl apply -f common/ns-and-sa.yaml
+#kubectl apply -f common/default-server-secret.yaml
+#kubectl apply -f common/nginx-config.yaml
+#kubectl apply -f rbac/rbac.yaml
+#kubectl apply -f daemon-set/nginx-ingress.yaml
